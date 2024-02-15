@@ -5,6 +5,32 @@
 #include <numeric>
 #include <cmath>
 
+int get_gcd(int e, int lambda)
+{
+    if (lambda == 0)
+        return e;
+    return get_gcd(lambda, e % lambda);   
+}
+
+int get_lcm(int phi_p, int phi_q) 
+{
+    return (phi_p * phi_q) / get_gcd(phi_p, phi_q);
+}
+
+int get_d(int e, int lambda)
+{
+    int d;
+    for (unsigned int i = 1; i < lambda; i++)
+    {
+        d = i * e;
+        if (d % lambda == 1 && i != e)
+        {
+            return i;
+        }
+    }
+    return 0;
+}
+
 int validate_prime(int n)
 {
     if (n <= 1)
@@ -25,13 +51,6 @@ int validate_prime(int n)
     return n;
 }
 
-int find_gcd(int e, int lambda)
-{
-    if (lambda == 0)
-        return lambda;
-    return find_gcd(lambda, e % lambda);   
-}
-
 int validate_e(int e, int lambda)
 {
     if (e < 3 || e >= lambda)
@@ -39,7 +58,7 @@ int validate_e(int e, int lambda)
         std::cout << "Invalid lambda value. Value e must be between 3 and lambda - 1." << std::endl;
         return 0;
     }
-    else if (find_gcd(e, lambda != 1))
+    else if (get_gcd(e, lambda) != 1)
     {
         std::cout << "Invalid lambda value. Values e and lambda must be coprime." << std::endl;
         return 0;
@@ -50,25 +69,20 @@ int validate_e(int e, int lambda)
     }
 }
 
-int find_d(int e, int lambda)
+unsigned long long int encrypt(int m, int e, int n)
 {
-    int d;
-    for (unsigned int i = 1; i < lambda; i++)
+    unsigned long long int x = 1, y = m;
+    while (e > 0)
     {
-        d = i * e;
-        if (d % lambda == 1)
+        if (e % 2 == 1)
         {
-            if (i != e)
-            {
-                return i;
-            }
-        }   
+            x = (x * y) % n;
+        }
+        y = (y * y) % n;
+        e /= 2;
     }
-    return 0;
+    return x % n;
 }
-
-std::vector<int> public_key;
-std::vector<int> private_key;
 
 int main()
 {
@@ -93,7 +107,7 @@ int main()
     }
 
     int n = p * q;
-    int lambda = (p - 1) * (q - 1);
+    int lambda = get_lcm((p - 1), (q - 1));
 
     std::cout << "Value of \'n\': " << n << std::endl;
     std::cout << "Value of \'lambda(n)\': " << lambda << std::endl;
@@ -109,31 +123,24 @@ int main()
         std::cout << std::endl;
     }
     
-    int d = find_d(e, lambda);
+    int d = get_d(e, lambda);
     std::cout << "Value of \'d\': " << d << std::endl;
     std::cout << std::endl;
 
-    public_key.push_back(n);
-    private_key.push_back(n);
-    public_key.push_back(e);
-    private_key.push_back(d);
-
-    std::cout << "Public Key: {" << public_key.at(0) << ", " << public_key.at(1) << "}" << std::endl;
-    std::cout << "Private Key: {" << private_key.at(0) << ", " << private_key.at(1) << "}" << std::endl;
+    std::cout << "Public Key: {" << n << ", " << e << "}" << std::endl;
+    std::cout << "Private Key: {" << n << ", " << d << "}" << std::endl;
     std::cout << std::endl;
 
-    int m;
+    unsigned long long int m;
     std::cout << "Enter plaintext integer value \'m\': " << std::endl;
     std::cin >> m;
     std::cout << std::endl;
 
-    long double c = (long double) std::pow(m, public_key.at(1));
-    c = (unsigned long long int) c % public_key.at(0);
+    unsigned long long int c = encrypt(m, e, n);
     std::cout << "Encrypted Value of \'m\' (c): " << c << std::endl;
     std::cout << std::endl;
 
-    long double m2 = (long double) std::pow(c, private_key.at(1));
-    m2 = (unsigned long long int) m2 % private_key.at(0);
+    unsigned long long int m2 = encrypt(c, d, n);
     std::cout << "Unencrypted Value of \'m\' (m2): " << m2 << std::endl;
     std::cout << std::endl;
 
