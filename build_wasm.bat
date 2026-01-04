@@ -11,7 +11,7 @@ if %ERRORLEVEL% NEQ 0 (
 echo Compiling RSA to WebAssembly...
 
 emcc rsa_wrapper.cpp ^
-    -o ../public/rsa_demo.js ^
+    -o ../../public/wasm/rsa_demo.js ^
     -s WASM=1 ^
     -s MODULARIZE=1 ^
     -s EXPORT_ES6=0 ^
@@ -24,7 +24,7 @@ emcc rsa_wrapper.cpp ^
 
 if %ERRORLEVEL% EQU 0 (
     echo Compilation successful!
-    echo Output files: ../public/rsa_demo.js and ../public/rsa_demo.wasm
+    echo Output files: ../../public/wasm/rsa_demo.js and ../../public/wasm/rsa_demo.wasm
 ) else (
     echo Compilation failed with exit code %ERRORLEVEL%
     exit /b 1
